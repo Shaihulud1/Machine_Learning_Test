@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+    </head>
+    <body>
+        <div id="vue-ml">
+            <p class="data-output">{{output}}</p>
+        </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="brain.js" charset="utf-8"></script>
+    <script type="text/javascript">
+        var netSettings = {
+            jsoneFile: 'ml-result',
+            fromJSON: true,
+            trainSettings: {
+                errorThresh: 0.005,
+                iterations: 10000,
+                learningRate: 0.3,
+                log: true,
+                logPeriod: 10
+            }
+        };
+
+        var net = new brain.NeuralNetwork();
+        if(!netSettings.fromJSON)
+        {
+            net.train([{input: [0, 0], output: [0]},
+                       {input: [0, 1], output: [1]},
+                       {input: [1, 0], output: [1]},
+                       {input: [1, 1], output: [0]}], netSettings.trainSettings);
+        }else{
+            jsonTrain = getMLTrainDataFromJson(netSettings.jsoneFile);
+            console.log(jsonTrain);
+            net.fromJSON(jsonTrain);
+        }
+
+        output = net.run([1, 0]);
+        jsonData = JSON.stringify(net.toJSON());
+        saveMLResultToJson(jsonData, netSettings.jsoneFile);
+
+        var app = new Vue({
+          el: '#vue-ml',
+          data: {
+            output: output
+          }
+        });
+
+        function getMLTrainDataFromJson(file)
+        {
+            var mlResult;
+            $.ajax({
+              url: "MLData.php",
+              method: "POST",
+              data: {file: file, action:'get'},
+              global: false,
+              async:false,
+              success: function(data){
+                  mlResult = data;
+                  /*mlResult = JSON.parse(data);*/
+              }
+            });
+            return mlResult;
+        }
+
+        function saveMLResultToJson(jsonData, file)
+        {
+            $.ajax({
+              url: "MLData.php",
+              method: "POST",
+              data: {mlData: jsonData, file: file, action:'set'},
+            }).done(function() {
+            });
+        }
+    </script>
+    </body>
+</html>
