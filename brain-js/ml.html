@@ -20,7 +20,7 @@
                 errorThresh: 0.005,
                 iterations: 10000,
                 learningRate: 0.3,
-                log: true,
+                log: false,
                 logPeriod: 10
             }
         };
@@ -34,11 +34,11 @@
                        {input: [1, 1], output: [0]}], netSettings.trainSettings);
         }else{
             jsonTrain = getMLTrainDataFromJson(netSettings.jsoneFile);
-            console.log(jsonTrain);
+            jsonTrain = JSON.parse(jsonTrain);
             net.fromJSON(jsonTrain);
         }
 
-        output = net.run([1, 0]);
+        output = net.run([0, 1]);
         jsonData = JSON.stringify(net.toJSON());
         saveMLResultToJson(jsonData, netSettings.jsoneFile);
 
@@ -72,7 +72,6 @@
               url: "MLData.php",
               method: "POST",
               data: {mlData: jsonData, file: file, action:'set'},
-            }).done(function() {
             });
         }
     </script>

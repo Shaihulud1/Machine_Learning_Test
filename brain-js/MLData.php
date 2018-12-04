@@ -3,7 +3,7 @@ if(isset($_POST['action']))
 {
     switch ($_POST['action']) {
         case 'set':
-            $data = trim(htmlspecialchars($_POST['mlData']));
+            $data = $_POST['mlData'];
             if(!$data) die();
             $file = isset($_POST['save']) ? trim(htmlspecialchars($_POST['file'])) : 'resultJson';
             file_put_contents($file.'.json', $data);
