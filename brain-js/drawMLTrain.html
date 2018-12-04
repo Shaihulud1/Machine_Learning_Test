@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+    </head>
+    <body>
+        <canvas id="canvas" style="display: block;position: fixed;top: 20%;left: 25%;"></canvas>
+        <script type="text/javascript">
+            var canv = document.getElementById('canvas'),
+                ctx = canv.getContext('2d');
+            canv.width = 500;
+            canv.height = 500;
+
+            lineOptions = {
+                lineFrom: {
+                    x: 200,
+                    y: 300,
+                },
+                lineTo: {
+                    x: 400,
+                    y: 300,
+                },
+                lineWidth: 10,
+                lineCoords: {
+                    get topX(){return lineOptions.lineFrom.x;},
+                    get topY(){return lineOptions.lineFrom.y - (lineOptions.lineWidth / 2);},
+                    get botX(){return lineOptions.lineTo.x;},
+                    get botY(){return lineOptions.lineTo.y + (lineOptions.lineWidth / 2);},
+                }
+            }
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = lineOptions.lineWidth;
+            ctx.beginPath();
+            ctx.moveTo(lineOptions.lineFrom.x, lineOptions.lineFrom.y);
+            ctx.lineTo(lineOptions.lineTo.x, lineOptions.lineTo.y);
+            ctx.closePath();
+            ctx.stroke();
+            trainInput = [lineOptions.lineFrom.x, lineOptions.lineFrom.y, lineOptions.lineTo.x, lineOptions.lineTo.y, lineOptions.lineWidth];
+            console.log(trainInput);
+            trainOutput = fillRectFieldsColorDetect(canv.height, canv.width);
+            /*fillRectFields(canv.height, canv.width, lineOptions.lineFrom, lineOptions.lineTo, lineOptions.lineWidth);*/
+
+            function fillRectFieldsColorDetect(cheight, cwidth)
+            {
+                var rectParams = {
+                    x: 0,
+                    y: 0,
+                    rWidth: 20,
+                    rHeight: 20,
+                };
+                $colums = (cwidth / rectParams.rWidth);
+                $rows = (cheight / rectParams.rHeight);
+
+                ctx.lineWidth = 1;
+                ctx.strokeStyle = 'green';
+                curPosition = {
+                    x: 0,
+                    y: 0,
+                }
+                for($h = 1; $h < $colums; $h++)
+                {
+                    for($i = 1; $i < $rows; $i++)
+                    {
+                        //выявить пересечение
+                        var arFillRectParams = [curPosition.x, curPosition.y, rectParams.rWidth, rectParams.rHeight];
+                        curPosition.x = curPosition.x + rectParams.rWidth;
+                        rectParams.topX = curPosition.x;
+                        rectParams.topY = curPosition.y;
+                        rectParams.botX = curPosition.x + rectParams.rWidth;
+                        rectParams.botY = curPosition.y + rectParams.rHeight;
+                        /*ctx.strokeStyle = 'black';
+                        ctx.strokeRect(curPosition.x, curPosition.y, rectParams.rWidth, rectParams.rHeight);*/
+                        let arPixels = ctx.getImageData(curPosition.x, curPosition.y, rectParams.rWidth, rectParams.rHeight);
+                        if(arPixels.data.indexOf(255) != -1)
+                        {
+                            ctx.strokeStyle = 'black';
+                            ctx.strokeRect(curPosition.x, curPosition.y, rectParams.rWidth, rectParams.rHeight);
+                        }
+                    }
+                    curPosition.x = 0;
+                    curPosition.y = curPosition.y + rectParams.rHeight;
+                }
+            }
+
+            function fillRectFields(cheight, cwidth, linefrom, lineTo, lineWidth)
+            {
+                var rectParams = {
+                    x: 0,
+                    y: 0,
+                    rWidth: 20,
+                    rHeight: 20,
+                };
+                $colums = (cwidth / rectParams.rWidth);
+                $rows = (cheight / rectParams.rHeight);
+
+                ctx.lineWidth = 1;
+                ctx.strokeStyle = 'green';
+                curPosition = {
+                    x: 0,
+                    y: 0,
+                }
+                for($h = 1; $h < $colums; $h++)
+                {
+                    for($i = 1; $i < $rows; $i++)
+                    {
+                        //выявить пересечение
+                        var arFillRectParams = [curPosition.x, curPosition.y, rectParams.rWidth, rectParams.rHeight];
+                        curPosition.x = curPosition.x + rectParams.rWidth;
+                        rectParams.topX = curPosition.x;
+                        rectParams.topY = curPosition.y;
+                        rectParams.botX = curPosition.x + rectParams.rWidth;
+                        rectParams.botY = curPosition.y + rectParams.rHeight;
+                        if(isCrossedFigure(lineOptions.lineCoords.topX,
+                                           lineOptions.lineCoords.topY,
+                                           lineOptions.lineCoords.botX,
+                                           lineOptions.lineCoords.botY,
+                                           rectParams.topX,
+                                           rectParams.topY,
+                                           rectParams.botX,
+                                           rectParams.botY
+                                       )
+                        ){
+                            ctx.fillStyle = 'red';
+                            ctx.fillRect(curPosition.x, curPosition.y, rectParams.rWidth, rectParams.rHeight);
+                        }
+                        ctx.strokeStyle = 'black';
+                        ctx.strokeRect(curPosition.x, curPosition.y, rectParams.rWidth, rectParams.rHeight);
+
+                    }
+                    curPosition.x = 0;
+                    curPosition.y = curPosition.y + rectParams.rHeight;
+                }
+            }
+
+            function isCrossedFigure(lineTopX, lineTopY, lineBotX, lineBotY, sqrTopX, sqrTopY, sqrBotX, sqrBotY)
+            {
+                //return false;
+                return (sqrTopX > lineBotX || sqrBotX > lineTopX) && (sqrTopY > lineBotY || sqrBotY > lineTopY);
+
+                //console.log(lineOptions.lineCoords.topY);
+                //console.log(lineOptions.lineCoords.botY);
+            }
+
+        </script>
+        <script type="text/javascript"  src="../brain.js"></script>
+    </body>
+</html>
