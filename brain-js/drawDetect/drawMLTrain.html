@@ -5,41 +5,50 @@
         <title></title>
     </head>
     <body>
+        <script type="text/javascript"  src="../brain.js"></script>
         <canvas id="canvas" style="display: block;position: fixed;top: 20%;left: 25%;"></canvas>
         <script type="text/javascript">
+            var net = new brain.NeuralNetwork();
             var canv = document.getElementById('canvas'),
-                ctx = canv.getContext('2d');
-            canv.width = 500;
-            canv.height = 500;
+                ctx = canv.getContext('2d'),
+                NeuroTrain;
 
-            lineOptions = {
-                lineFrom: {
-                    x: 200,
-                    y: 300,
-                },
-                lineTo: {
-                    x: 400,
-                    y: 300,
-                },
-                lineWidth: 10,
-                lineCoords: {
-                    get topX(){return lineOptions.lineFrom.x;},
-                    get topY(){return lineOptions.lineFrom.y - (lineOptions.lineWidth / 2);},
-                    get botX(){return lineOptions.lineTo.x;},
-                    get botY(){return lineOptions.lineTo.y + (lineOptions.lineWidth / 2);},
+            NeuroTrain = NeuroTrain(canv,ctx);
+            console.log(NeuroTrain);
+            function NeuroTrain(canv, ctx, fromX=200,fromY=300,toX=400,toY=200)
+            {
+                canv.width = 500;
+                canv.height = 500;
+
+                lineOptions = {
+                    lineFrom: {
+                        x: fromX,
+                        y: fromY,
+                    },
+                    lineTo: {
+                        x: toX,
+                        y: toY,
+                    },
+                    lineWidth: 10,
+                    lineCoords: {
+                        get topX(){return lineOptions.lineFrom.x;},
+                        get topY(){return lineOptions.lineFrom.y - (lineOptions.lineWidth / 2);},
+                        get botX(){return lineOptions.lineTo.x;},
+                        get botY(){return lineOptions.lineTo.y + (lineOptions.lineWidth / 2);},
+                    }
                 }
+                ctx.strokeStyle = 'black';
+                ctx.lineWidth = lineOptions.lineWidth;
+                ctx.beginPath();
+                ctx.moveTo(lineOptions.lineFrom.x, lineOptions.lineFrom.y);
+                ctx.lineTo(lineOptions.lineTo.x, lineOptions.lineTo.y);
+                ctx.closePath();
+                ctx.stroke();
+                var trainData = {};
+                trainData.input = [lineOptions.lineFrom.x, lineOptions.lineFrom.y, lineOptions.lineTo.x, lineOptions.lineTo.y, lineOptions.lineWidth];
+                trainData.output = fillRectFieldsColorDetect(canv.height, canv.width);
+                return trainData;
             }
-            ctx.strokeStyle = 'black';
-            ctx.lineWidth = lineOptions.lineWidth;
-            ctx.beginPath();
-            ctx.moveTo(lineOptions.lineFrom.x, lineOptions.lineFrom.y);
-            ctx.lineTo(lineOptions.lineTo.x, lineOptions.lineTo.y);
-            ctx.closePath();
-            ctx.stroke();
-            var trainData = {};
-            trainData.trainInput = [lineOptions.lineFrom.x, lineOptions.lineFrom.y, lineOptions.lineTo.x, lineOptions.lineTo.y, lineOptions.lineWidth];
-            trainData.trainOutput = fillRectFieldsColorDetect(canv.height, canv.width);
-            console.log(trainData);
             /*fillRectFields(canv.height, canv.width, lineOptions.lineFrom, lineOptions.lineTo, lineOptions.lineWidth);*/
 
             function fillRectFieldsColorDetect(cheight, cwidth)
@@ -59,6 +68,8 @@
                     x: 0,
                     y: 0,
                 }
+                var c = 0;
+                var outputData = [];
                 for($h = 1; $h < $colums; $h++)
                 {
                     for($i = 1; $i < $rows; $i++)
@@ -73,19 +84,19 @@
                         /*ctx.strokeStyle = 'black';
                         ctx.strokeRect(curPosition.x, curPosition.y, rectParams.rWidth, rectParams.rHeight);*/
                         let arPixels = ctx.getImageData(curPosition.x, curPosition.y, rectParams.rWidth, rectParams.rHeight);
-                        let outputData = [];
                         if(arPixels.data.indexOf(255) != -1)
                         {
                             ctx.strokeStyle = 'black';
                             ctx.strokeRect(curPosition.x, curPosition.y, rectParams.rWidth, rectParams.rHeight);
                             outputData.push([curPosition.x, curPosition.y]);
-                            console.log('check');
+                            c++;
+                            console.log(c);
                         }
-                        console.log(outputData);
                     }
                     curPosition.x = 0;
                     curPosition.y = curPosition.y + rectParams.rHeight;
                 }
+                return outputData;
             }
 
             function fillRectFields(cheight, cwidth, linefrom, lineTo, lineWidth)
@@ -148,6 +159,5 @@
             }
 
         </script>
-        <script type="text/javascript"  src="../brain.js"></script>
     </body>
 </html>
