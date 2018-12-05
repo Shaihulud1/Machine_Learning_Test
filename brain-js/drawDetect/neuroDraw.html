@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+    <head>
+        <meta charset="utf-8">
+        <title></title>
+    </head>
+    <body>
+
+    </body>
+    <script type="text/javascript" src="../brain.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript">
+        var netSettings = {
+            jsoneFile: 'ml-draw-train',
+            fromJSON: true,
+            trainSettings: {
+                errorThresh: 0.005,
+                iterations: 10000,
+                learningRate: 0.3,
+                log: false,
+                logPeriod: 10
+            }
+        };
+        var net = new brain.NeuralNetwork();
+        jsonTrain = getMLTrainDataFromJson(netSettings.jsoneFile);
+        jsonTrain = JSON.parse(jsonTrain);
+        net.fromJSON(jsonTrain);
+        points = {
+            fx: 100,
+            fy: 300,
+            tx: 200,
+            ty: 155,
+            w: 10
+        }
+        console.log(points);
+        output = net.run({fx:122,fy:254,tx:325,ty:255,w:10});
+        console.log(net);
+        console.log(output);
+
+
+        function getMLTrainDataFromJson(file)
+        {
+            var mlResult;
+            $.ajax({
+              url: "../MLData.php",
+              method: "POST",
+              data: {file: file, action:'get'},
+              global: false,
+              async:false,
+              success: function(data){
+                  mlResult = data;
+                  /*mlResult = JSON.parse(data);*/
+              }
+            });
+            return mlResult;
+        }
+    </script>
+</html>

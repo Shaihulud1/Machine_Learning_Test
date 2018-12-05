@@ -15,7 +15,7 @@
 
             arNeuroTrain = [];
 
-            for(x = 0; x<200; x++)
+            for(x = 0; x<30; x++)
             {
                 points = {
                     fromX: randomInteger(400, 100),
@@ -48,6 +48,7 @@
 
             function saveMLResultToJson(jsonData, file)
             {
+                console.log(jsonData);
                 $.ajax({
                   url: "../MLData.php",
                   method: "POST",
