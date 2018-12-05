@@ -6,15 +6,60 @@
     </head>
     <body>
         <script type="text/javascript"  src="../brain.js"></script>
+        <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
         <canvas id="canvas" style="display: block;position: fixed;top: 20%;left: 25%;"></canvas>
         <script type="text/javascript">
             var net = new brain.NeuralNetwork();
             var canv = document.getElementById('canvas'),
-                ctx = canv.getContext('2d'),
-                NeuroTrain;
+                ctx = canv.getContext('2d');
 
-            NeuroTrain = NeuroTrain(canv,ctx);
-            console.log(NeuroTrain);
+            arNeuroTrain = [];
+
+            for(x = 0; x<200; x++)
+            {
+                points = {
+                    fromX: randomInteger(400, 100),
+                    fromY: randomInteger(400, 100),
+                    toX: randomInteger(400, 100),
+                    toY: randomInteger(400, 100),
+                }
+                a = NeuroTrain(canv, ctx, points.fromX, points.fromY, points.toX, points.toY);
+                arNeuroTrain.push(a);
+                console.log(x);
+            }
+            var netSettings = {
+                jsoneFile: 'ml-draw-train',
+                fromJSON: true,
+                trainSettings: {
+                    errorThresh: 0.005,
+                    iterations: 10000,
+                    learningRate: 0.3,
+                    log: false,
+                    logPeriod: 10
+                }
+            };
+            console.log(arNeuroTrain);
+            net.train(arNeuroTrain, netSettings.trainSettings);
+            jsonData = JSON.stringify(net.toJSON());
+            saveMLResultToJson(jsonData, netSettings.jsoneFile);
+
+
+
+
+            function saveMLResultToJson(jsonData, file)
+            {
+                $.ajax({
+                  url: "../MLData.php",
+                  method: "POST",
+                  data: {mlData: jsonData, file: file, action:'set'},
+                });
+            }
+
+
+            function randomInteger(max, min)
+            {
+                return Math.floor(Math.random() * (max - min + 1)) + min;
+            }
             function NeuroTrain(canv, ctx, fromX=200,fromY=300,toX=400,toY=200)
             {
                 canv.width = 500;
@@ -45,7 +90,16 @@
                 ctx.closePath();
                 ctx.stroke();
                 var trainData = {};
-                trainData.input = [lineOptions.lineFrom.x, lineOptions.lineFrom.y, lineOptions.lineTo.x, lineOptions.lineTo.y, lineOptions.lineWidth];
+
+                trainData = {
+                    input: {
+                        fx:lineOptions.lineFrom.x,
+                        fy:lineOptions.lineFrom.y,
+                        tx:lineOptions.lineTo.x,
+                        ty:lineOptions.lineTo.y,
+                        w:lineOptions.lineWidth
+                    }
+                }
                 trainData.output = fillRectFieldsColorDetect(canv.height, canv.width);
                 return trainData;
             }
@@ -88,9 +142,9 @@
                         {
                             ctx.strokeStyle = 'black';
                             ctx.strokeRect(curPosition.x, curPosition.y, rectParams.rWidth, rectParams.rHeight);
-                            outputData.push([curPosition.x, curPosition.y]);
+                            outputData['x'+$i] = curPosition.x;
+                            outputData['y'+$i] = curPosition.y;
                             c++;
-                            console.log(c);
                         }
                     }
                     curPosition.x = 0;
